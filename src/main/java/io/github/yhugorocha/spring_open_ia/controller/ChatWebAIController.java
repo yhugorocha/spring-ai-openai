@@ -1,8 +1,11 @@
 package io.github.yhugorocha.spring_open_ia.controller;
 
 import io.github.yhugorocha.spring_open_ia.service.ChatService;
+import io.github.yhugorocha.spring_open_ia.service.ImageService;
 import io.github.yhugorocha.spring_open_ia.service.RecipeService;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/chat")
@@ -10,10 +13,12 @@ public class ChatWebAIController {
 
     private final ChatService chatService;
     private final RecipeService recipeService;
+    private final ImageService imageService;
 
-    public ChatWebAIController(ChatService chatService, RecipeService recipeService) {
+    public ChatWebAIController(ChatService chatService, RecipeService recipeService, ImageService imageService) {
         this.chatService = chatService;
         this.recipeService = recipeService;
+        this.imageService = imageService;
     }
 
     @GetMapping("ask-ai")
@@ -33,4 +38,17 @@ public class ChatWebAIController {
         return recipeService.createRecipe(ingredients, cuisine, dietaryRestrictions);
     }
 
+    @GetMapping("generate-image")
+    public List<String> generateImages(@RequestParam String prompt,
+                                       @RequestParam(defaultValue = "hd") String quality,
+                                       @RequestParam(defaultValue = "1") Integer n,
+                                       @RequestParam(defaultValue = "1024") Integer height,
+                                       @RequestParam(defaultValue = "1024") Integer width) {
+
+        return imageService.generateImage(prompt, quality, n, height, width)
+                .getResults()
+                .stream()
+                .map(i -> i.getOutput().getUrl())
+                .toList();
+    }
 }
